@@ -13,17 +13,41 @@ interface Task {
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [errors, setErros] = useState(false);
 
   function handleCreateNewTask() {
     // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+    if (newTaskTitle === '') {
+      setErros(true);
+      return;
+    }
+    setErros(false);
+    setTasks([...tasks, {
+      id: Number(Math.ceil(Math.random() * Math.pow(10, 8))),
+      title: newTaskTitle,
+      isComplete: false
+    }]);
+
+    setNewTaskTitle('');
   }
 
   function handleToggleTaskCompletion(id: number) {
     // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
+    const updateTasks = tasks.map(task => task.id === id ? {
+      ...task,
+      isComplete: !task.isComplete
+    } : task);
+
+    setTasks(updateTasks);
   }
 
   function handleRemoveTask(id: number) {
     // Remova uma task da listagem pelo ID
+    const taskIndex = tasks.findIndex(task => task.id == id);
+
+    tasks.splice(taskIndex, 1);
+    
+    setTasks(tasks.filter(task => task.id !== id));
   }
 
   return (
@@ -42,8 +66,13 @@ export function TaskList() {
             <FiCheckSquare size={16} color="#fff"/>
           </button>
         </div>
-      </header>
 
+      </header>
+      
+      {errors && (
+        <div className="message-error">Campo de todo não pode estar vazio</div>
+      )}
+      
       <main>
         <ul>
           {tasks.map(task => (
